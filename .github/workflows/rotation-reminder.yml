@@ -41,7 +41,6 @@ jobs:
           cat ${{ env.ROTATION_FILE }}
 
       - name: Extract current guardian
-        id: get_guardian
         run: |
           # Extract the Guardian name from the #Guardians section of the wiki Rotation.md file
           # Update this as per your wiki file structure
@@ -50,10 +49,14 @@ jobs:
           # Debugging output
           echo "Current Guardian: $GUARDIAN"
 
+          # Extract GUARDIAN_ID from GUARDIAN (split at the colon) since GUARDIAN="name:ID"
+          # Update this as per your wiki file structure
+          GUARDIAN_ID=$(echo "$GUARDIAN" | cut -d':' -f2)
+
           # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
           # Store the guardian in environment variables
           echo "GUARDIAN=$GUARDIAN" >> $GITHUB_ENV
-          # TODO: GUARDIAN_ID....
+          echo "GUARDIAN_ID=$GUARDIAN_ID" >> $GITHUB_ENV
 
       - name: Send Test Message
         if: github.event_name == 'workflow_dispatch'
@@ -61,7 +64,7 @@ jobs:
           MESSAGE="<!here> 
           :wave: Hello, World! :earth_africa:
           This is a test message to check if the reminder works. :robot_face:
-          The current guardian is <@$GUARDIAN>. :shield:
+          The current guardian is <@$GUARDIAN_ID>. :shield:
           
           Please ignore this message. :sweat_smile:"
           
@@ -78,7 +81,7 @@ jobs:
         run: |
           MESSAGE="<!here> :robot_face: *System Monitoring Alert!* :rotating_light:
           Hey team! I need your help!
-          This week's mighty guardian of system stability is <@$GUARDIAN>. :shield:
+          This week's mighty guardian of system stability is <@$GUARDIAN_ID>. :shield:
           Please check ${{ env.SLACK_CHANNEL }} and keep an eye on those pesky errors and bugs.
           Don't leave me alone! Without your help, I'm nothing! :pleading_face: :heart:"
 
@@ -94,7 +97,7 @@ jobs:
         if: github.event.schedule == '0 8 * * 5' || github.event.schedule == '0 12 * * *'
         run: |
           MESSAGE="<!here> :trophy: *End of Week Celebration!* :confetti_ball:
-          Hey <@$GUARDIAN>! You did an *amazing* job this week keeping our system safe. :fire:
+          Hey <@$GUARDIAN_ID>! You did an *amazing* job this week keeping our system safe. :fire:
           Before you grab that weekend drink :beers:, please update the next person in the wiki.
           I'll take care of the rest! Have a great weekend! :sunglasses: :sparkles:"
 
