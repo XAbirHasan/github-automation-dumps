@@ -3,6 +3,10 @@ name: System Monitoring Reminder
 on:
   workflow_dispatch: # Allows manual runs
 
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # Set in repository secrets
+  SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }} # Set in repository secrets
+
 jobs:
   send-rotation-reminder:
     runs-on: ubuntu-latest
@@ -45,9 +49,6 @@ jobs:
 
       - name: Send Test Message
         if: github.event_name == 'workflow_dispatch'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} # Set in repository secrets
-          SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
         run: |
           MESSAGE="@here 
           :wave: Hello, World! :earth_africa:
@@ -56,4 +57,11 @@ jobs:
           
           Please ignore this message. :sweat_smile:"
           
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"$MESSAGE\"}" ${{ env.SLACK_WEBHOOK_URL }}
+          curl -X POST \
+            -H "Content-type: application/json" \
+            --data "{
+              \"channel\": \"${{ env.SLACK_CHANNEL_ID }}\",
+              \"text\": \"${MESSAGE}\"
+            }" \
+            "${{ env.SLACK_WEBHOOK_URL }}"
+
