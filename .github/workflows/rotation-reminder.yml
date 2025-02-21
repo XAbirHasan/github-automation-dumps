@@ -1,0 +1,44 @@
+name: System Monitoring Reminder
+
+on:
+  workflow_dispatch: # Allows manual runs
+
+jobs:
+  send-rotation-reminder:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Uncomment this for debugging
+      - name: Logs
+        run: |
+          echo "event: ${{ toJson(github.event) }}"
+          echo "Secret: ${{ toJson(secrets) }}"
+          echo "Environment: ${{ toJson(env) }}"
+          echo "Runner: ${{ toJson(runner) }}"
+          ls -la
+          pwd
+
+      - name: Fetch wiki content from public repository
+        env:
+          WIKI_PAGE_URL: "https://raw.githubusercontent.com/wiki/${{ github.repository }}/Rotation.md?token=${{ secrets.GITHUB_TOKEN }}"
+          ROTATION_FILE: rotation.md
+        run: |
+          curl -s "${{ env.WIKI_PAGE_URL }}" > ${{ env.ROTATION_FILE }}
+          cat ${{ env.ROTATION_FILE }}
+
+      - name: Extract current guardian
+        id: get_guardian
+        run: |
+          # Extract the Guardian name from the #Guardians section of the wiki Rotation.md file
+          # Update this as per your wiki file structure
+          GUARDIAN=$(awk '/# Guardians/,/^$/' rotation.md | grep '🔥' | sed 's/[[:space:]-]//g' | awk -F '🔥' '{print $1}')
+          
+          # Debugging output
+          echo "Current Guardian: $GUARDIAN"
+
+          # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
+          # Store the guardian in environment variables
+          echo "GUARDIAN=$GUARDIAN" >> $GITHUB_ENV
