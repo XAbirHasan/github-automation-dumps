@@ -46,14 +46,15 @@ jobs:
           # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
           # Store the guardian in environment variables
           echo "GUARDIAN=$GUARDIAN" >> $GITHUB_ENV
+          # TODO: GUARDIAN_ID....
 
       - name: Send Test Message
         if: github.event_name == 'workflow_dispatch'
         run: |
-          MESSAGE="@here 
+          MESSAGE="<!here> 
           :wave: Hello, World! :earth_africa:
           This is a test message to check if the reminder works. :robot_face:
-          The current guardian is @$GUARDIAN. :shield:
+          The current guardian is <@$GUARDIAN>. :shield:
           
           Please ignore this message. :sweat_smile:"
           
