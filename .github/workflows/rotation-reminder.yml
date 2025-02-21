@@ -2,10 +2,15 @@ name: System Monitoring Reminder
 
 on:
   workflow_dispatch: # Allows manual runs
+  schedule:
+    - cron: '0 8 * * 1' # Runs every Monday at 08:00 UTC (2:00 PM BST, 9:00 AM CEST / 8:00 AM CET)
+    - cron: '0 8 * * 5' # Runs every Friday at 08:00 UTC (2:00 PM BST, 9:00 AM CEST / 8:00 AM CET)
 
 env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # Set in repository secrets
   SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }} # Set in repository secrets
+
+  SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
 
 jobs:
   send-rotation-reminder:
@@ -65,4 +70,39 @@ jobs:
               \"text\": \"${MESSAGE}\"
             }" \
             "${{ env.SLACK_WEBHOOK_URL }}"
+      
+      - name: Send Monday Reminder
+        if: github.event.schedule == '0 8 * * 1'
+        run: |
+          MESSAGE="<!here> :robot_face: *System Monitoring Alert!* :rotating_light:
+          Hey team! I need your help!
+          This week's mighty guardian of system stability is <@$GUARDIAN>. :shield:
+          Please check ${{ env.SLACK_CHANNEL }} and keep an eye on those pesky errors and bugs.
+          Don't leave me alone! Without your help, I'm nothing! :pleading_face: :heart:"
 
+          curl -X POST \
+            -H "Content-type: application/json" \
+            --data "{
+              \"channel\": \"${{ env.SLACK_CHANNEL_ID }}\",
+              \"text\": \"${MESSAGE}\"
+            }" \
+            "${{ env.SLACK_WEBHOOK_URL }}"
+
+      - name: Send Friday Gratitude
+        if: github.event.schedule == '0 8 * * 5'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
+        run: |
+          MESSAGE="<!here> :trophy: *End of Week Celebration!* :confetti_ball:
+          Hey <@$GUARDIAN>! You did an *amazing* job this week keeping our system safe. :fire:
+          Before you grab that weekend drink :beers:, please update the next person in the wiki.
+          I'll take care of the rest! Have a great weekend! :sunglasses: :sparkles:"
+
+          curl -X POST \
+            -H "Content-type: application/json" \
+            --data "{
+              \"channel\": \"${{ env.SLACK_CHANNEL_ID }}\",
+              \"text\": \"${MESSAGE}\"
+            }" \
+            "${{ env.SLACK_WEBHOOK_URL }}"
