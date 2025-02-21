@@ -42,3 +42,18 @@ jobs:
           # https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/workflow-commands-for-github-actions#setting-an-environment-variable
           # Store the guardian in environment variables
           echo "GUARDIAN=$GUARDIAN" >> $GITHUB_ENV
+
+      - name: Send Test Message
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }} # Set in repository secrets
+          SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
+        run: |
+          MESSAGE="@here 
+          :wave: Hello, World! :earth_africa:
+          This is a test message to check if the reminder works. :robot_face:
+          The current guardian is @$GUARDIAN. :shield:
+          
+          Please ignore this message. :sweat_smile:"
+          
+          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"$MESSAGE\"}" ${{ env.SLACK_WEBHOOK_URL }}
