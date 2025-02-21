@@ -5,6 +5,8 @@ on:
   schedule:
     - cron: '0 8 * * 1' # Runs every Monday at 08:00 UTC (2:00 PM BST, 9:00 AM CEST / 8:00 AM CET)
     - cron: '0 8 * * 5' # Runs every Friday at 08:00 UTC (2:00 PM BST, 9:00 AM CEST / 8:00 AM CET)
+    - cron: '0 4 * * *' # Runs at 10:00 AM BDT (4:00 AM UTC)
+    - cron: '0 12 * * *' # Runs at 5:00 PM BDT (12:00 PM UTC)
 
 env:
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # Set in repository secrets
@@ -70,9 +72,9 @@ jobs:
               \"text\": \"${MESSAGE}\"
             }" \
             "${{ env.SLACK_WEBHOOK_URL }}"
-      
+
       - name: Send Monday Reminder
-        if: github.event.schedule == '0 8 * * 1'
+        if: github.event.schedule == '0 8 * * 1' || github.event.schedule == '0 4 * * *'
         run: |
           MESSAGE="<!here> :robot_face: *System Monitoring Alert!* :rotating_light:
           Hey team! I need your help!
@@ -89,10 +91,7 @@ jobs:
             "${{ env.SLACK_WEBHOOK_URL }}"
 
       - name: Send Friday Gratitude
-        if: github.event.schedule == '0 8 * * 5'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
+        if: github.event.schedule == '0 8 * * 5' || github.event.schedule == '0 12 * * *'
         run: |
           MESSAGE="<!here> :trophy: *End of Week Celebration!* :confetti_ball:
           Hey <@$GUARDIAN>! You did an *amazing* job this week keeping our system safe. :fire:
