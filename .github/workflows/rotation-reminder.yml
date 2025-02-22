@@ -13,6 +13,7 @@ env:
   SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }} # Set in repository secrets
 
   SLACK_CHANNEL: "#your-channel-name" # Replace with actual Slack channel
+  ROTATION_FILE: rotation.md # File to store the rotation content
 
 jobs:
   send-rotation-reminder:
@@ -35,10 +36,17 @@ jobs:
       - name: Fetch wiki content from public repository
         env:
           WIKI_PAGE_URL: "https://raw.githubusercontent.com/wiki/${{ github.repository }}/Rotation.md?token=${{ secrets.GITHUB_TOKEN }}"
-          ROTATION_FILE: rotation.md
         run: |
           curl -s "${{ env.WIKI_PAGE_URL }}" > ${{ env.ROTATION_FILE }}
           cat ${{ env.ROTATION_FILE }}
+      
+      # Fetch the latest wiki content from a private repository.
+      # Since direct API access to private wikis is not available, we clone the wiki repository.
+      - name: Fetch wiki content from private repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
+          cat wiki/Rotation.md
+          cat wiki/Rotation.md > ${{ env.ROTATION_FILE }}
 
       - name: Extract current guardian
         run: |
